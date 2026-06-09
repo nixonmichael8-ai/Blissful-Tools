@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blissful Intelligence — Supplier Database</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0A07;color:#E2D9C8;font-family:'Libre Baskerville',Georgia,serif;min-height:100vh;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#2a2a1a;border-radius:2px}
+input,select,textarea{font-family:'DM Sans',sans-serif;font-size:13px;outline:none;color:#E2D9C8;background:#111109;border:1px solid #2a2a1a;border-radius:4px;padding:8px 10px;width:100%;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:#D4AF6A55}
+select option{background:#111109}
+input::placeholder,textarea::placeholder{color:#444}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;transition:all .15s}
+.nav{background:#0D0D09;border-bottom:1px solid #1C1C14;display:flex;align-items:center;height:52px;padding:0 20px;flex-shrink:0;overflow-x:auto;gap:0}
+.nav-logo{font-size:11px;letter-spacing:4px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-right:32px;white-space:nowrap;flex-shrink:0}
+.nav-btn{background:transparent;color:#555;padding:0 14px;height:52px;font-size:10px;letter-spacing:2px;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.nav-btn.active{color:#D4AF6A;border-bottom-color:#D4AF6A;background:#1A1A12}
+.nav-btn:hover{color:#aaa}
+.saved-dot{margin-left:auto;font-size:10px;color:#7C9B88;font-family:'DM Sans',sans-serif;flex-shrink:0;padding-left:16px}
+.page{display:none;flex:1;overflow:hidden}
+.page.active{display:flex;flex-direction:column}
+.page-scroll{flex:1;overflow-y:auto;padding:20px}
+/* Category badges */
+.cat-badge{font-size:10px;font-family:'DM Sans',sans-serif;padding:2px 10px;border-radius:12px;letter-spacing:.5px;white-space:nowrap}
+.cat-MidRange{background:#1a2e1a;border:1px solid #3a6b3a;color:#6dbf6d}
+.cat-SemiLuxury{background:#0d2035;border:1px solid #1a5080;color:#5ab4f0}
+.cat-Luxury{background:#1e1035;border:1px solid #4a2090;color:#a070f0}
+.cat-UltraLuxury{background:#2a1e00;border:1px solid #7a5500;color:#D4AF6A}
+/* Table */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:9px 14px;text-align:left;font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif;font-weight:400;border-bottom:1px solid #1C1C14;white-space:nowrap}
+.tbl td{padding:11px 14px;border-bottom:1px solid #111;vertical-align:middle}
+.tbl tr.tbl-row{cursor:pointer;transition:background .1s}
+.tbl tr.tbl-row:hover{background:#121210}
+.tbl tr.tbl-row.sel{background:#161612}
+/* Sidebar filter */
+.sidebar{width:188px;flex-shrink:0;border-right:1px solid #1C1C14;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.filter-section-label{font-size:9px;letter-spacing:2px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:6px}
+.filter-opt{padding:5px 8px;border-radius:3px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:#666;transition:all .1s;display:block;background:none;border:none;text-align:left;width:100%}
+.filter-opt:hover{color:#999}
+.filter-opt.active{background:#D4AF6A10;color:#D4AF6A}
+/* Detail panel */
+.detail-panel{width:320px;flex-shrink:0;border-left:1px solid #1C1C14;overflow-y:auto;padding:20px}
+.detail-lbl{font-size:9px;letter-spacing:2px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:8px;display:block}
+.detail-val{font-size:12px;color:#C8BFA8;font-family:'DM Sans',sans-serif;line-height:1.5}
+.divider{height:1px;background:#1C1C14;margin:14px 0}
+/* Buttons */
+.btn-gold{background:#D4AF6A18;border:1px solid #D4AF6A55;color:#D4AF6A;padding:8px 16px;border-radius:4px;font-size:10px;letter-spacing:1.5px;font-weight:500}
+.btn-gold:hover{background:#D4AF6A28}
+.btn-ghost{background:#1a1a12;border:1px solid #2a2a1a;color:#888;padding:8px 16px;border-radius:4px;font-size:10px;letter-spacing:1px}
+.btn-ghost:hover{border-color:#444;color:#aaa}
+.btn-red{background:#2a100818;border:1px solid #6a2a2a55;color:#cc7777;padding:8px 16px;border-radius:4px;font-size:10px}
+/* Cards */
+.card{background:#0D0D09;border:1px solid #1C1C14;border-radius:8px;padding:16px;margin-bottom:10px;transition:all .2s}
+.card:hover{transform:translateY(-1px);border-color:#D4AF6A44}
+/* Score bar */
+.score-bar-wrap{width:60px;height:2px;background:#1a1a12;border-radius:1px;display:inline-block;vertical-align:middle}
+.score-bar-fill{height:100%;border-radius:1px}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:#000a;z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#0D0D09;border:1px solid #2a2a1a;border-radius:10px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:400;margin-bottom:16px}
+/* Grid inputs */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-group{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:9px;letter-spacing:1.5px;color:#555;font-family:'DM Sans',sans-serif}
+/* Tags */
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:9px;font-family:'DM Sans',sans-serif;background:#161610;border:1px solid #2a2a1a;color:#777;margin:2px}
+/* Dashboard */
+.dash-stat{background:#0D0D09;border:1px solid #1C1C14;border-radius:8px;padding:16px 20px;flex:1;min-width:100px}
+.dash-num{font-size:28px;font-family:'DM Sans',sans-serif;font-weight:300}
+.dash-lbl{font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif;margin-top:2px}
+.dash-card{background:#0D0D09;border:1px solid #1C1C14;border-radius:8px;padding:16px}
+.dash-card-title{font-size:9px;letter-spacing:2.5px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:14px;display:block}
+/* Scoring */
+.score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.score-key{font-size:10px;color:#666;font-family:'DM Sans',sans-serif}
+/* KiliFair */
+.lead-card{background:#0D0D09;border:1px solid #1C1C14;border-radius:8px;padding:16px;margin-bottom:12px}
+.info-item{margin-bottom:8px}
+.info-k{font-size:9px;letter-spacing:1.5px;color:#555;font-family:'DM Sans',sans-serif;margin-bottom:2px}
+.info-v{font-size:12px;color:#C8BFA8;font-family:'DM Sans',sans-serif}
+.stat-dot{width:5px;height:5px;border-radius:50%;display:inline-block;margin-right:4px}
+/* Contacts */
+.contact-card{background:#0D0D09;border:1px solid #1C1C14;border-radius:8px;padding:16px;margin-bottom:10px}
+/* Toggle */
+.toggle-wrap{display:flex;align-items:center;gap:8px;cursor:pointer}
+.toggle{width:32px;height:18px;border-radius:9px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-knob{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:2px;transition:left .2s}
+/* Backup */
+.backup-btn{background:#111109;border:1px solid #2a2a1a;color:#777;padding:8px 14px;border-radius:4px;font-size:10px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:1px}
+.backup-btn:hover{border-color:#D4AF6A44;color:#D4AF6A88}
+textarea{resize:vertical}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">BLISSFUL</div>
+  <button class="nav-btn active" onclick="switchTab('dashboard')">DASHBOARD</button>
+  <button class="nav-btn" onclick="switchTab('properties')">PROPERTIES</button>
+  <button class="nav-btn" onclick="switchTab('itinerary')">ITINERARY</button>
+  <button class="nav-btn" onclick="switchTab('contacts')">CONTACTS</button>
+  <button class="nav-btn" onclick="switchTab('leads')">KILIFAIR</button>
+  <button class="nav-btn" onclick="switchTab('scoring')">SCORING</button>
+  <div class="saved-dot" id="saved-dot" style="display:none">✓ SAVED</div>
+</nav>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="page-scroll">
+    <div style="margin-bottom:20px">
+      <div style="font-size:9px;letter-spacing:4px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:6px">BLISSFUL TRAVEL ADVENTURES</div>
+      <h1 style="font-size:26px;font-weight:400;margin-bottom:4px">Supplier Intelligence</h1>
+      <div style="font-size:12px;color:#555;font-family:'DM Sans',sans-serif">Central knowledge base for East &amp; Southern Africa</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap" id="dash-stats"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px" id="dash-cards"></div>
+  </div>
+</div>
+
+<!-- PROPERTIES -->
+<div id="page-properties" class="page">
+  <div style="display:flex;flex:1;overflow:hidden">
+    <!-- Sidebar -->
+    <div class="sidebar" id="prop-sidebar">
+      <input id="prop-search" placeholder="Search…" oninput="filterProps()" style="margin-bottom:4px">
+      <div>
+        <div class="filter-section-label">COUNTRY</div>
+        <div id="f-country"></div>
+      </div>
+      <div>
+        <div class="filter-section-label">CATEGORY</div>
+        <div id="f-category"></div>
+      </div>
+      <div>
+        <div class="filter-section-label">TYPE</div>
+        <div id="f-type"></div>
+      </div>
+      <div>
+        <div class="filter-section-label">FLY-IN</div>
+        <div id="f-flyin"></div>
+      </div>
+      <button class="btn-gold" style="width:100%;margin-top:auto" onclick="openAddProp()">+ ADD PROPERTY</button>
+    </div>
+    <!-- Table area -->
+    <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column">
+      <div style="padding:10px 16px;border-bottom:1px solid #1C1C14;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <span id="prop-count" style="font-size:10px;color:#555;font-family:'DM Sans',sans-serif;letter-spacing:1px">0 PROPERTIES</span>
+        <div style="display:flex;gap:8px">
+          <button class="backup-btn" onclick="backupData()">⬇ BACKUP</button>
+          <button class="backup-btn" onclick="triggerRestore()">⬆ RESTORE</button>
+          <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(event)">
+        </div>
+      </div>
+      <div style="overflow-x:auto;flex:1">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>PROPERTY</th><th>COUNTRY / AREA</th><th>CATEGORY</th><th>TYPE</th><th>RATE/NIGHT</th><th>MEAL PLAN</th><th>SCORE</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="prop-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Detail panel -->
+    <div class="detail-panel" id="detail-panel" style="display:none">
+      <div id="detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ITINERARY BUILDER -->
+<div id="page-itinerary" class="page">
+  <div class="page-scroll">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:9px;letter-spacing:3px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:4px">ITINERARY BUILDER</div>
+        <h2 style="font-size:22px;font-weight:400">Find the right property</h2>
+      </div>
+      <div id="itin-count" style="font-size:11px;color:#D4AF6A;font-family:'DM Sans',sans-serif"></div>
+    </div>
+    <div style="background:#0D0D09;border:1px solid #1C1C14;border-radius:8px;padding:16px;margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end" id="itin-filters"></div>
+    <div id="itin-results" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
+  </div>
+</div>
+
+<!-- CONTACTS -->
+<div id="page-contacts" class="page">
+  <div class="page-scroll">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:9px;letter-spacing:3px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:4px">CONTACT MANAGEMENT</div>
+        <h2 style="font-size:22px;font-weight:400">Supplier Contacts</h2>
+      </div>
+      <button class="btn-gold" onclick="openAddContact()">+ ADD CONTACT</button>
+    </div>
+    <div id="contacts-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+  </div>
+</div>
+
+<!-- KILIFAIR -->
+<div id="page-leads" class="page">
+  <div class="page-scroll">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:9px;letter-spacing:3px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:4px">LIVE CAPTURE</div>
+        <h2 style="font-size:22px;font-weight:400">KiliFair Leads</h2>
+      </div>
+      <button class="btn-gold" onclick="openAddLead()">+ CAPTURE LEAD</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap" id="lead-stats"></div>
+    <div id="leads-list"></div>
+  </div>
+</div>
+
+<!-- SCORING -->
+<div id="page-scoring" class="page">
+  <div class="page-scroll">
+    <div style="margin-bottom:20px">
+      <div style="font-size:9px;letter-spacing:3px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:4px">INTELLIGENCE</div>
+      <h2 style="font-size:22px;font-weight:400">Blissful Rating System</h2>
+      <div style="font-size:12px;color:#555;font-family:'DM Sans',sans-serif;margin-top:2px">Ranked by Blissful Score · 9 dimensions</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl" style="min-width:900px">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>LOCATION</th><th>ACCOM</th><th>FOOD</th><th>SERVICE</th><th>ACTIVITIES</th><th>VALUE</th><th>LUXURY</th><th>FAMILY</th><th>HONEYMOON</th>
+            <th>BLISSFUL SCORE</th>
+          </tr>
+        </thead>
+        <tbody id="score-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+<!-- Add Property Modal -->
+<div class="modal-bg" id="modal-addprop">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3>Add Property</h3>
+      <button onclick="closeModal('modal-addprop')" style="background:none;color:#555;font-size:16px;padding:0">✕</button>
+    </div>
+    <p style="font-size:12px;color:#666;font-family:'DM Sans',sans-serif;margin-bottom:14px;line-height:1.6">Describe the property in plain text — name, location, category, rate, contact. Claude will structure it automatically.</p>
+    <textarea id="add-prop-text" rows="5" placeholder='e.g. "Sayari Camp by Asilia Africa, luxury tented camp in Northern Serengeti Tanzania, fly-in via Kogatende airstrip, 15 tents, $1600/night all inclusive, best for couples and honeymoon, 15% commission, reservations@asiliaafrica.com"'></textarea>
+    <div id="add-prop-error" style="color:#cc7777;font-size:11px;font-family:'DM Sans',sans-serif;margin-top:6px;display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-gold" id="add-prop-btn" onclick="submitAddProp()" style="flex:1">ADD WITH AI</button>
+      <button class="btn-ghost" onclick="closeModal('modal-addprop')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Contact Modal -->
+<div class="modal-bg" id="modal-addcontact">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3>Add Contact</h3>
+      <button onclick="closeModal('modal-addcontact')" style="background:none;color:#555;font-size:16px;padding:0">✕</button>
+    </div>
+    <div class="grid2">
+      <div class="field-group"><span class="field-label">COMPANY</span><input id="nc-company" placeholder="e.g. Asilia Africa"></div>
+      <div class="field-group"><span class="field-label">CONTACT PERSON</span><input id="nc-person" placeholder="Full name"></div>
+      <div class="field-group"><span class="field-label">POSITION</span><input id="nc-position" placeholder="e.g. Sales Manager"></div>
+      <div class="field-group"><span class="field-label">EMAIL</span><input id="nc-email" type="email"></div>
+      <div class="field-group"><span class="field-label">WHATSAPP</span><input id="nc-whatsapp" type="tel" placeholder="+255..."></div>
+      <div class="field-group"><span class="field-label">DESTINATION</span><input id="nc-destination" placeholder="e.g. Tanzania"></div>
+      <div class="field-group" style="grid-column:1/-1"><span class="field-label">PROPERTY / PROPERTIES</span><input id="nc-property" placeholder="e.g. Sayari, Namiri Plains"></div>
+      <div class="field-group" style="grid-column:1/-1"><span class="field-label">NOTES</span><textarea id="nc-notes" rows="2"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-gold" onclick="submitAddContact()" style="flex:1">ADD CONTACT</button>
+      <button class="btn-ghost" onclick="closeModal('modal-addcontact')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Lead Modal -->
+<div class="modal-bg" id="modal-addlead">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3>Capture KiliFair Lead</h3>
+      <button onclick="closeModal('modal-addlead')" style="background:none;color:#555;font-size:16px;padding:0">✕</button>
+    </div>
+    <div class="grid2">
+      <div class="field-group"><span class="field-label">COMPANY</span><input id="nl-company"></div>
+      <div class="field-group"><span class="field-label">PROPERTY NAME</span><input id="nl-property"></div>
+      <div class="field-group"><span class="field-label">DESTINATION</span><input id="nl-destination"></div>
+      <div class="field-group"><span class="field-label">AREA</span><input id="nl-area"></div>
+      <div class="field-group"><span class="field-label">CATEGORY</span>
+        <select id="nl-category"><option>Mid-Range</option><option selected>Semi-Luxury</option><option>Luxury</option><option>Ultra-Luxury</option></select>
+      </div>
+      <div class="field-group"><span class="field-label">APPROX RATE (USD)</span><input id="nl-rate" type="number" placeholder="per night"></div>
+      <div class="field-group"><span class="field-label">CONTACT PERSON</span><input id="nl-contact"></div>
+      <div class="field-group"><span class="field-label">WHATSAPP</span><input id="nl-whatsapp" type="tel"></div>
+      <div class="field-group" style="grid-column:1/-1"><span class="field-label">EMAIL</span><input id="nl-email" type="email"></div>
+      <div class="field-group"><span class="field-label">PRIORITY</span>
+        <select id="nl-priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
+      </div>
+      <div class="field-group"><span class="field-label">BEST FOR</span><input id="nl-bestfor" placeholder="e.g. Honeymoon, VIP"></div>
+      <div class="field-group" style="grid-column:1/-1"><span class="field-label">UNIQUE SELLING POINT</span><input id="nl-usp"></div>
+      <div class="field-group" style="grid-column:1/-1"><span class="field-label">NOTES</span><textarea id="nl-notes" rows="2"></textarea></div>
+    </div>
+    <div style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#888;font-family:'DM Sans',sans-serif"><input type="checkbox" id="nl-agentrates"> Agent Rates</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#888;font-family:'DM Sans',sans-serif"><input type="checkbox" id="nl-factsheet"> Fact Sheet</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#888;font-family:'DM Sans',sans-serif"><input type="checkbox" id="nl-followup"> Follow Up</label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-gold" onclick="submitAddLead()" style="flex:1">CAPTURE LEAD</button>
+      <button class="btn-ghost" onclick="closeModal('modal-addlead')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Lead Modal -->
+<div class="modal-bg" id="modal-editlead">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3>Edit Lead</h3>
+      <button onclick="closeModal('modal-editlead')" style="background:none;color:#555;font-size:16px;padding:0">✕</button>
+    </div>
+    <div class="grid2">
+      <div class="field-group"><span class="field-label">COMPANY</span><input id="el-company"></div>
+      <div class="field-group"><span class="field-label">PROPERTY NAME</span><input id="el-property"></div>
+      <div class="field-group"><span class="field-label">DESTINATION</span><input id="el-destination"></div>
+      <div class="field-group"><span class="field-label">AREA</span><input id="el-area"></div>
+      <div class="field-group"><span class="field-label">CATEGORY</span>
+        <select id="el-category"><option>Mid-Range</option><option>Semi-Luxury</option><option>Luxury</option><option>Ultra-Luxury</option></select>
+      </div>
+      <div class="field-group"><span class="field-label">APPROX RATE (USD)</span><input id="el-rate" type="number"></div>
+      <div class="field-group"><span class="field-label">CONTACT PERSON</span><input id="el-contact"></div>
+      <div class="field-group"><span class="field-label">WHATSAPP</span><input id="el-whatsapp" type="tel"></div>
+      <div class="field-group" style="grid-column:1/-1"><span class="field-label">EMAIL</span><input id="el-email" type="email"></div>
+      <div class="field-group"><span class="field-label">PRIORITY</span>
+        <select id="el-priority"><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <div class="field-group"><span class="field-label">BEST FOR</span><input id="el-bestfor"></div>
+      <div class="field-group" style="grid-column:1/-1"><span class="field-label">UNIQUE SELLING POINT</span><input id="el-usp"></div>
+      <div class="field-group" style="grid-column:1/-1"><span class="field-label">NOTES</span><textarea id="el-notes" rows="2"></textarea></div>
+    </div>
+    <div style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#888;font-family:'DM Sans',sans-serif"><input type="checkbox" id="el-agentrates"> Agent Rates</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#888;font-family:'DM Sans',sans-serif"><input type="checkbox" id="el-factsheet"> Fact Sheet</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#888;font-family:'DM Sans',sans-serif"><input type="checkbox" id="el-followup"> Follow Up</label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-gold" onclick="submitEditLead()" style="flex:1">SAVE CHANGES</button>
+      <button class="btn-ghost" onclick="closeModal('modal-editlead')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// SEED DATA
+// ═══════════════════════════════════════════════════════════════════
+const SEED_PROPERTIES = [
+  {id:"p1",name:"Singita Grumeti",brand:"Singita",country:"Tanzania",destination:"Tanzania Safari",area:"Western Serengeti",type:"Luxury Tented Camp",category:"Ultra-Luxury",rooms:12,roomTypes:"Tented Suites, Family Villa",flyIn:true,airstrip:"Grumeti Airstrip",familyFriendly:true,childPolicy:"12+ years",clientType:["VIP","Executives","Honeymoon","Couples","Luxury Travelers","Photographers"],avgRate:2200,mealPlan:"All Inclusive",resContact:"Singita Reservations",resEmail:"reservations@singita.com",resWhatsapp:"",salesEmail:"sales@singita.com",website:"singita.com",commission:"15%",agentRates:true,factSheet:true,contractSigned:true,lastUpdated:"2026-06-01",notes:"Private concession. Book 12-18 months ahead. Migration corridor.",scores:{location:10,accommodation:10,food:9,service:10,activities:10,value:7,luxuryExp:10,familyExp:7,honeymoonExp:10}},
+  {id:"p2",name:"Sayari Camp",brand:"Asilia Africa",country:"Tanzania",destination:"Tanzania Safari",area:"Northern Serengeti",type:"Luxury Tented Camp",category:"Luxury",rooms:15,roomTypes:"Tented Suites",flyIn:true,airstrip:"Kogatende Airstrip",familyFriendly:false,childPolicy:"16+ years",clientType:["Couples","Honeymoon","Photographers","Luxury Travelers","VIP"],avgRate:1600,mealPlan:"All Inclusive",resContact:"Asilia Reservations",resEmail:"reservations@asiliaafrica.com",resWhatsapp:"+255123456789",salesEmail:"sales@asiliaafrica.com",website:"asiliaafrica.com",commission:"15%",agentRates:true,factSheet:true,contractSigned:false,lastUpdated:"2026-05-15",notes:"Prime Mara River crossing position. Peak July-Oct.",scores:{location:10,accommodation:9,food:8,service:9,activities:10,value:8,luxuryExp:9,familyExp:4,honeymoonExp:10}},
+  {id:"p3",name:"Ngorongoro Crater Lodge",brand:"&Beyond",country:"Tanzania",destination:"Tanzania Safari",area:"Ngorongoro",type:"Safari Lodge",category:"Ultra-Luxury",rooms:30,roomTypes:"Suites",flyIn:true,airstrip:"Manyara Airstrip",familyFriendly:true,childPolicy:"All ages",clientType:["Luxury Travelers","VIP","Honeymoon","Couples","Executives"],avgRate:1900,mealPlan:"All Inclusive",resContact:"&Beyond Reservations",resEmail:"res@andbeyond.com",resWhatsapp:"",salesEmail:"salestz@andbeyond.com",website:"andbeyond.com",commission:"12%",agentRates:true,factSheet:true,contractSigned:true,lastUpdated:"2026-06-01",notes:"Most iconic lodge in Africa. Crater rim location. Theatrical design.",scores:{location:10,accommodation:9,food:9,service:9,activities:9,value:7,luxuryExp:10,familyExp:8,honeymoonExp:9}},
+  {id:"p4",name:"Namiri Plains",brand:"Asilia Africa",country:"Tanzania",destination:"Tanzania Safari",area:"Eastern Serengeti",type:"Luxury Tented Camp",category:"Luxury",rooms:8,roomTypes:"Tented Suites",flyIn:true,airstrip:"Namiri Airstrip",familyFriendly:false,childPolicy:"16+ years",clientType:["Photographers","Couples","Honeymoon","Luxury Travelers"],avgRate:1400,mealPlan:"All Inclusive",resContact:"Asilia Reservations",resEmail:"reservations@asiliaafrica.com",resWhatsapp:"+255123456789",salesEmail:"sales@asiliaafrica.com",website:"asiliaafrica.com",commission:"15%",agentRates:true,factSheet:true,contractSigned:false,lastUpdated:"2026-05-20",notes:"Best cheetah sightings in East Africa. Remote eastern Serengeti.",scores:{location:9,accommodation:8,food:8,service:9,activities:10,value:8,luxuryExp:8,familyExp:3,honeymoonExp:9}},
+  {id:"p5",name:"Baraza Resort & Spa",brand:"Zanzibar Collection",country:"Zanzibar",destination:"Zanzibar",area:"Bwejuu",type:"Adults Only Resort",category:"Luxury",rooms:30,roomTypes:"Villas with plunge pools",flyIn:false,airstrip:"Zanzibar Airport",familyFriendly:false,childPolicy:"Adults only 16+",clientType:["Honeymoon","Couples","Luxury Travelers","Executives","VIP"],avgRate:950,mealPlan:"Full Board",resContact:"ZC Reservations",resEmail:"reservations@zanzibarcollection.com",resWhatsapp:"+255987654321",salesEmail:"sales@zanzibarcollection.com",website:"zanzibarcollection.com",commission:"12%",agentRates:true,factSheet:true,contractSigned:true,lastUpdated:"2026-04-10",notes:"Leading Spas of the World. Adults-only. Top spa in East Africa.",scores:{location:9,accommodation:9,food:9,service:10,activities:8,value:8,luxuryExp:9,familyExp:1,honeymoonExp:10}},
+  {id:"p6",name:"Angama Mara",brand:"Angama",country:"Kenya",destination:"Maasai Mara",area:"Maasai Mara",type:"Luxury Tented Camp",category:"Ultra-Luxury",rooms:30,roomTypes:"Tented Suites",flyIn:true,airstrip:"Ol Kiombo Airstrip",familyFriendly:true,childPolicy:"8+ years",clientType:["Honeymoon","Couples","Photographers","VIP","Luxury Travelers","Executives"],avgRate:1850,mealPlan:"All Inclusive",resContact:"Angama Reservations",resEmail:"res@angama.com",resWhatsapp:"",salesEmail:"sales@angama.com",website:"angama.com",commission:"15%",agentRates:true,factSheet:true,contractSigned:false,lastUpdated:"2026-05-30",notes:"Out of Africa filming location. Rift Valley escarpment views. Iconic.",scores:{location:10,accommodation:10,food:9,service:10,activities:9,value:7,luxuryExp:10,familyExp:7,honeymoonExp:10}},
+  {id:"p7",name:"Bisate Lodge",brand:"Wilderness",country:"Rwanda",destination:"Volcanoes National Park",area:"Volcanoes NP",type:"Safari Lodge",category:"Ultra-Luxury",rooms:6,roomTypes:"Forest Villas",flyIn:false,airstrip:"Kigali International",familyFriendly:false,childPolicy:"15+ years",clientType:["VIP","Luxury Travelers","Honeymoon","Couples","Executives","Creators"],avgRate:2800,mealPlan:"All Inclusive",resContact:"Wilderness Reservations",resEmail:"info@wilderness.co.za",resWhatsapp:"",salesEmail:"sales@wilderness.co.za",website:"wilderness.co.za",commission:"15%",agentRates:true,factSheet:true,contractSigned:false,lastUpdated:"2026-05-01",notes:"Volcanic crater setting. Only 6 villas. Gorilla trekking. Architectural masterpiece.",scores:{location:10,accommodation:10,food:9,service:10,activities:10,value:6,luxuryExp:10,familyExp:3,honeymoonExp:10}},
+  {id:"p8",name:"Arusha Coffee Lodge",brand:"Elewana",country:"Tanzania",destination:"Tanzania Safari",area:"Arusha",type:"Boutique Hotel",category:"Semi-Luxury",rooms:20,roomTypes:"Garden Cottages, Coffee Suite",flyIn:false,airstrip:"Kilimanjaro International",familyFriendly:true,childPolicy:"All ages",clientType:["Families","Couples","Executives","Corporate"],avgRate:380,mealPlan:"Bed & Breakfast",resContact:"Elewana Reservations",resEmail:"reservations@elewana.com",resWhatsapp:"+255111222333",salesEmail:"sales@elewana.com",website:"elewana.com",commission:"10%",agentRates:true,factSheet:true,contractSigned:true,lastUpdated:"2026-06-01",notes:"On working coffee plantation. 5 min from KIA. Ideal transit/start property.",scores:{location:7,accommodation:7,food:8,service:8,activities:6,value:9,luxuryExp:6,familyExp:8,honeymoonExp:6}},
+  {id:"p9",name:"Zuri Zanzibar",brand:"Independent",country:"Zanzibar",destination:"Zanzibar",area:"Kendwa",type:"Beach Resort",category:"Luxury",rooms:40,roomTypes:"Bungalows, Family Suites",flyIn:false,airstrip:"Zanzibar Airport",familyFriendly:true,childPolicy:"All ages",clientType:["Couples","Honeymoon","Creators","Musicians","Luxury Travelers","Families"],avgRate:750,mealPlan:"Half Board",resContact:"Zuri Reservations",resEmail:"res@zurizanzibar.com",resWhatsapp:"+255444555666",salesEmail:"sales@zurizanzibar.com",website:"zurizanzibar.com",commission:"12%",agentRates:true,factSheet:false,contractSigned:false,lastUpdated:"2026-03-15",notes:"Visually stunning eco-luxury. Treetop bar. Strong appeal for creators.",scores:{location:9,accommodation:9,food:8,service:8,activities:8,value:8,luxuryExp:8,familyExp:7,honeymoonExp:9}},
+  {id:"p10",name:"Mahali Mzuri",brand:"Virgin Limited Edition",country:"Kenya",destination:"Maasai Mara",area:"Maasai Mara",type:"Luxury Tented Camp",category:"Ultra-Luxury",rooms:12,roomTypes:"Tented Suites",flyIn:true,airstrip:"Mara North Airstrip",familyFriendly:false,childPolicy:"12+ years",clientType:["VIP","Musicians","Athletes","Creators","Executives","Luxury Travelers"],avgRate:2000,mealPlan:"All Inclusive",resContact:"Virgin LE Reservations",resEmail:"res@virginlimitededition.com",resWhatsapp:"",salesEmail:"sales@virginlimitededition.com",website:"virginlimitededition.com",commission:"12%",agentRates:false,factSheet:true,contractSigned:false,lastUpdated:"2026-05-01",notes:"Richard Branson's camp. Strong brand pull for music/entertainment clients.",scores:{location:10,accommodation:10,food:9,service:10,activities:9,value:7,luxuryExp:10,familyExp:4,honeymoonExp:9}},
+];
+const SEED_CONTACTS = [
+  {id:"c1",company:"Singita",person:"Sarah Kimani",position:"East Africa Sales Manager",email:"sarah@singita.com",whatsapp:"+254700111222",destination:"Tanzania/Kenya",property:"Singita Grumeti, Singita Mara River",notes:"Very responsive. Met at ILTM 2024.",lastMet:"2024-12-10",lastFollowUp:"2026-03-01"},
+  {id:"c2",company:"Asilia Africa",person:"James Mollel",position:"Tanzania Sales Representative",email:"james@asiliaafrica.com",whatsapp:"+255755222333",destination:"Tanzania",property:"Sayari, Namiri Plains, Lamai",notes:"Met at KiliFair 2025. Dedicated agent portal.",lastMet:"2025-06-15",lastFollowUp:"2026-05-01"},
+  {id:"c3",company:"&Beyond",person:"Priya Sharma",position:"Trade Sales Manager - Tanzania",email:"priya@andbeyond.com",whatsapp:"",destination:"Tanzania",property:"Ngorongoro Crater Lodge, Klein's Camp",notes:"Slow on WhatsApp, better via email.",lastMet:"2025-11-20",lastFollowUp:"2026-04-15"},
+];
+const SEED_LEADS = [
+  {id:"l1",company:"Nomad Tanzania",property:"Lamai Serengeti",destination:"Tanzania Safari",area:"Northern Serengeti",category:"Luxury",approxRate:1500,bestFor:"Couples, Honeymoon, Photographers",usp:"Hilltop kopje views, very photogenic",resContact:"Nomad Reservations",whatsapp:"+255777888999",email:"reservations@nomad-tanzania.com",agentRates:true,factSheetCollected:true,followUpRequired:true,priority:"High",notes:"Stunning location. Schedule site inspection Q3."},
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let properties = [], contacts = [], leads = [];
+let selectedPropId = null;
+let propFilters = {search:"",country:"All",category:"All",type:"All",flyIn:"All"};
+let itinState = {destination:"All",category:"All",client:"All",flyIn:"All",honeymoon:false,family:false,minRate:"",maxRate:""};
+
+const CATEGORIES = ["Mid-Range","Semi-Luxury","Luxury","Ultra-Luxury"];
+const TYPES = ["Safari Lodge","Luxury Tented Camp","Mobile Camp","Beach Resort","Boutique Hotel","Private Villa","City Hotel","Retreat","Adults Only Resort","Game Reserve"];
+const CLIENT_TYPES = ["Honeymoon","Couples","Families","Groups","Corporate","VIP","Executives","Athletes","Musicians","Creators","Photographers","Luxury Travelers"];
+const DESTINATIONS_LIST = ["Central Serengeti","Northern Serengeti","Southern Serengeti","Western Serengeti","Ngorongoro","Tarangire","Lake Manyara","Arusha","Ruaha","Nyerere","Mikumi","Nungwi","Kendwa","Matemwe","Kiwengwa","Paje","Jambiani","Stone Town","Maasai Mara","Amboseli","Samburu","Volcanoes NP","Bwindi","Victoria Falls"];
+
+// ═══════════════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════════════
+function persist(){
+  try{localStorage.setItem('bta_intelligence_v3',JSON.stringify({properties,contacts,leads}));showSaved();}catch(e){}
+}
+function loadData(){
+  try{
+    const d=localStorage.getItem('bta_intelligence_v3');
+    if(d){const p=JSON.parse(d);properties=p.properties||SEED_PROPERTIES;contacts=p.contacts||SEED_CONTACTS;leads=p.leads||SEED_LEADS;}
+    else{properties=[...SEED_PROPERTIES];contacts=[...SEED_CONTACTS];leads=[...SEED_LEADS];}
+  }catch(e){properties=[...SEED_PROPERTIES];contacts=[...SEED_CONTACTS];leads=[...SEED_LEADS];}
+}
+function showSaved(){const d=document.getElementById('saved-dot');d.style.display='block';setTimeout(()=>d.style.display='none',1500);}
+
+// Backup & Restore
+function backupData(){
+  const data=JSON.stringify({properties,contacts,leads},null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='blissful-backup-'+new Date().toISOString().split('T')[0]+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+function triggerRestore(){document.getElementById('restore-input').click();}
+function restoreData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{const d=JSON.parse(ev.target.result);
+      if(d.properties){properties=d.properties;contacts=d.contacts||[];leads=d.leads||[];persist();renderAll();alert('Restored successfully.');}
+      else alert('Invalid backup file.');
+    }catch(err){alert('Could not read file.');}
+  };reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function blissfulScore(s){if(!s)return 0;const v=Object.values(s);return(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1);}
+function catClass(c){return'cat-'+(c||'').replace(/[^a-zA-Z]/g,'');}
+function catDot(c){const m={'Mid-Range':'#4CAF50','Semi-Luxury':'#2196F3','Luxury':'#7E57C2','Ultra-Luxury':'#D4AF6A'};return m[c]||'#888';}
+function x(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function uid(){return 'p'+Date.now()+'_'+Math.random().toString(36).slice(2);}
+function scoreColor(v){return v>=9?'#D4AF6A':v>=7?'#7C9B88':'#555';}
+
+// ═══════════════════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(tab==='dashboard') renderDashboard();
+  if(tab==='properties'){buildPropFilters();filterProps();}
+  if(tab==='itinerary') renderItin();
+  if(tab==='contacts') renderContacts();
+  if(tab==='leads') renderLeads();
+  if(tab==='scoring') renderScoring();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+function renderDashboard(){
+  const lux=properties.filter(p=>p.category==='Luxury'||p.category==='Ultra-Luxury').length;
+  const flyInCount=properties.filter(p=>p.flyIn).length;
+  const countries=new Set(properties.map(p=>p.country)).size;
+  const topRated=[...properties].sort((a,b)=>blissfulScore(b.scores)-blissfulScore(a.scores)).slice(0,5);
+  const byCat=CATEGORIES.map(c=>({label:c,count:properties.filter(p=>p.category===c).length}));
+  const byCountry=[...new Set(properties.map(p=>p.country))].map(c=>({label:c,count:properties.filter(p=>p.country===c).length})).sort((a,b)=>b.count-a.count);
+  const missingEmail=properties.filter(p=>!p.resEmail).length;
+  const noContract=properties.filter(p=>!p.contractSigned).length;
+  const followUps=leads.filter(l=>l.followUpRequired).length;
+
+  document.getElementById('dash-stats').innerHTML=[
+    {l:'TOTAL PROPERTIES',v:properties.length,c:'#D4AF6A'},
+    {l:'LUXURY + ULTRA',v:lux,c:'#D4AF6A'},
+    {l:'COUNTRIES',v:countries,c:'#7C9B88'},
+    {l:'FLY-IN ACCESS',v:flyInCount,c:'#5ab4f0'},
+    {l:'CONTACTS',v:contacts.length,c:'#aaa'},
+    {l:'KILIFAIR LEADS',v:leads.length,c:'#ff8c42'},
+  ].map(s=>`<div class="dash-stat"><div class="dash-num" style="color:${s.c}">${s.v}</div><div class="dash-lbl">${s.l}</div></div>`).join('');
+
+  const maxCat=Math.max(...byCat.map(c=>c.count),1);
+  const maxCou=Math.max(...byCountry.map(c=>c.count),1);
+
+  document.getElementById('dash-cards').innerHTML=`
+    <div class="dash-card">
+      <span class="dash-card-title">BY CATEGORY</span>
+      ${byCat.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:11px;color:${catDot(c.label)};font-family:'DM Sans',sans-serif">${c.label}</span><div style="display:flex;align-items:center;gap:8px"><div style="width:80px;height:2px;background:#1a1a12"><div style="width:${(c.count/maxCat)*100}%;height:100%;background:${catDot(c.label)}"></div></div><span style="font-size:13px;color:#aaa;font-family:'DM Sans',sans-serif;min-width:16px;text-align:right">${c.count}</span></div></div>`).join('')}
+    </div>
+    <div class="dash-card">
+      <span class="dash-card-title">BY COUNTRY</span>
+      ${byCountry.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif">${c.label}</span><div style="display:flex;align-items:center;gap:8px"><div style="width:80px;height:2px;background:#1a1a12"><div style="width:${(c.count/maxCou)*100}%;height:100%;background:#D4AF6A"></div></div><span style="font-size:13px;color:#aaa;font-family:'DM Sans',sans-serif;min-width:16px;text-align:right">${c.count}</span></div></div>`).join('')}
+    </div>
+    <div class="dash-card">
+      <span class="dash-card-title">TOP RATED PROPERTIES</span>
+      ${topRated.map((p,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><span style="font-size:10px;color:#555;font-family:'DM Sans',sans-serif;margin-right:8px">#${i+1}</span><span style="font-size:12px">${x(p.name)}</span><div style="font-size:9px;color:#555;font-family:'DM Sans',sans-serif;padding-left:20px">${x(p.area)}</div></div><span style="font-size:14px;color:#D4AF6A;font-family:'DM Sans',sans-serif">${blissfulScore(p.scores)}</span></div>`).join('')}
+    </div>
+    <div class="dash-card">
+      <span class="dash-card-title">ATTENTION REQUIRED</span>
+      ${missingEmail?`<div style="margin-bottom:8px"><span style="font-size:11px;color:#ff8c42;font-family:'DM Sans',sans-serif">⚠ ${missingEmail} properties missing email</span></div>`:''}
+      ${noContract?`<div style="margin-bottom:8px"><span style="font-size:11px;color:#e6c84a;font-family:'DM Sans',sans-serif">◎ ${noContract} without signed contract</span></div>`:''}
+      ${followUps?`<div style="margin-bottom:8px"><span style="font-size:11px;color:#D4AF6A;font-family:'DM Sans',sans-serif">→ ${followUps} KiliFair leads need follow-up</span></div>`:''}
+      ${(!missingEmail&&!noContract&&!followUps)?'<span style="font-size:11px;color:#555;font-family:\'DM Sans\',sans-serif;font-style:italic">All clear ✓</span>':''}
+    </div>
+    <div class="dash-card">
+      <span class="dash-card-title">RECENT KILIFAIR LEADS</span>
+      ${leads.slice(-4).reverse().map(l=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><span style="font-size:12px">${x(l.property)}</span><span class="cat-badge ${catClass(l.category)}">${l.category}</span></div><div style="font-size:9px;color:#555;font-family:'DM Sans',sans-serif">${x(l.company)} · ${x(l.destination)}</div></div>`).join('')}
+      ${leads.length===0?'<span style="font-size:11px;color:#555;font-family:\'DM Sans\',sans-serif;font-style:italic">No leads yet.</span>':''}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PROPERTIES
+// ═══════════════════════════════════════════════════════════════════
+function buildPropFilters(){
+  const countries=['All',...new Set(properties.map(p=>p.country))];
+  const cats=['All',...CATEGORIES];
+  const types=['All',...TYPES];
+  const flyins=['All','Yes','No'];
+  const render=(id,opts,key)=>{
+    document.getElementById(id).innerHTML=opts.map(o=>`<button class="filter-opt ${propFilters[key]===o?'active':''}" onclick="propFilters['${key}']='${o}';buildPropFilters();filterProps()">${o}</button>`).join('');
+  };
+  render('f-country',countries,'country');
+  render('f-category',cats,'category');
+  render('f-type',types,'type');
+  render('f-flyin',flyins,'flyIn');
+}
+
+function filterProps(){
+  const q=(document.getElementById('prop-search')?.value||'').toLowerCase();
+  propFilters.search=q;
+  const filtered=properties.filter(p=>{
+    const match=!q||p.name.toLowerCase().includes(q)||p.area.toLowerCase().includes(q)||p.country.toLowerCase().includes(q)||(p.brand||'').toLowerCase().includes(q);
+    return match&&
+      (propFilters.country==='All'||p.country===propFilters.country)&&
+      (propFilters.category==='All'||p.category===propFilters.category)&&
+      (propFilters.type==='All'||p.type===propFilters.type)&&
+      (propFilters.flyIn==='All'||(propFilters.flyIn==='Yes'?p.flyIn:!p.flyIn));
+  });
+  document.getElementById('prop-count').textContent=filtered.length+' PROPERTIES';
+  const tbody=document.getElementById('prop-tbody');
+  tbody.innerHTML=filtered.map(p=>{
+    const score=blissfulScore(p.scores);
+    return `<tr class="tbl-row ${selectedPropId===p.id?'sel':''}" onclick="selectProp('${p.id}')">
+      <td><div style="font-size:13px;color:#E2D9C8">${x(p.name)}</div><div style="font-size:10px;color:#666;font-family:'DM Sans',sans-serif">${x(p.brand)}</div></td>
+      <td><div style="font-size:12px;color:#aaa;font-family:'DM Sans',sans-serif">${x(p.country)}</div><div style="font-size:10px;color:#555;font-family:'DM Sans',sans-serif">${x(p.area)}</div></td>
+      <td><span class="cat-badge ${catClass(p.category)}">${x(p.category)}</span></td>
+      <td style="font-size:11px;color:#777;font-family:'DM Sans',sans-serif">${x(p.type)}</td>
+      <td style="font-size:12px;color:#D4AF6A;font-family:'DM Sans',sans-serif">$${(p.avgRate||0).toLocaleString()}</td>
+      <td style="font-size:11px;color:#777;font-family:'DM Sans',sans-serif">${x(p.mealPlan)}</td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div class="score-bar-wrap"><div class="score-bar-fill" style="width:${score*10}%;background:#D4AF6A"></div></div><span style="font-size:11px;color:#D4AF6A;font-family:'DM Sans',sans-serif">${score}</span></div></td>
+      <td><button class="btn-ghost" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();selectProp('${p.id}')">VIEW</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function selectProp(id){
+  selectedPropId=id;
+  filterProps();
+  const p=properties.find(pr=>pr.id===id);
+  if(!p)return;
+  const panel=document.getElementById('detail-panel');
+  panel.style.display='block';
+  const score=blissfulScore(p.scores);
+  const scoreLabels={location:'Location',accommodation:'Accommodation',food:'Food & Beverage',service:'Service',activities:'Activities',value:'Value',luxuryExp:'Luxury Experience',familyExp:'Family Experience',honeymoonExp:'Honeymoon Experience'};
+  panel.querySelector('#detail-content').innerHTML=`
+    <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+      <span style="font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif">PROPERTY DETAIL</span>
+      <button onclick="document.getElementById('detail-panel').style.display='none';selectedPropId=null;filterProps()" style="background:none;color:#555;font-size:14px;padding:0">✕</button>
+    </div>
+    <h3 style="font-size:20px;font-weight:400;margin-bottom:4px">${x(p.name)}</h3>
+    <div style="font-size:11px;color:#888;font-family:'DM Sans',sans-serif;margin-bottom:10px">${x(p.brand)} · ${x(p.area)}, ${x(p.country)}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+      <span class="cat-badge ${catClass(p.category)}">${x(p.category)}</span>
+      <span style="font-size:10px;font-family:'DM Sans',sans-serif;padding:2px 10px;border-radius:12px;background:#161610;border:1px solid #2a2a1a;color:#888">${x(p.type)}</span>
+    </div>
+    <div class="divider"></div>
+    <span class="detail-lbl">PROPERTY</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+      <div><div class="info-k">ROOMS</div><div class="info-v">${x(String(p.rooms||'—'))}</div></div>
+      <div><div class="info-k">MEAL PLAN</div><div class="info-v">${x(p.mealPlan)}</div></div>
+      <div><div class="info-k">RATE/NIGHT</div><div class="info-v" style="color:#D4AF6A">$${(p.avgRate||0).toLocaleString()}</div></div>
+      <div><div class="info-k">FLY-IN</div><div class="info-v">${p.flyIn?'Yes ✈':'Road'}</div></div>
+      <div><div class="info-k">AIRSTRIP</div><div class="info-v">${x(p.airstrip||'—')}</div></div>
+      <div><div class="info-k">FAMILY</div><div class="info-v">${p.familyFriendly?'Yes':'No'}</div></div>
+    </div>
+    <div class="divider"></div>
+    <span class="detail-lbl">CONTACTS</span>
+    <div class="info-item"><div class="info-k">RESERVATION</div><div class="info-v">${x(p.resContact||'—')}</div></div>
+    <div class="info-item"><div class="info-k">EMAIL</div><div class="info-v">${x(p.resEmail||'—')}</div></div>
+    <div class="info-item"><div class="info-k">WHATSAPP</div><div class="info-v">${x(p.resWhatsapp||'—')}</div></div>
+    <div class="info-item"><div class="info-k">COMMISSION</div><div class="info-v">${x(p.commission||'—')}</div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+      <span style="font-size:9px;font-family:'DM Sans',sans-serif;color:${p.agentRates?'#7C9B88':'#444'}"><span class="stat-dot" style="background:${p.agentRates?'#7C9B88':'#333'}"></span>AGENT RATES</span>
+      <span style="font-size:9px;font-family:'DM Sans',sans-serif;color:${p.factSheet?'#7C9B88':'#444'}"><span class="stat-dot" style="background:${p.factSheet?'#7C9B88':'#333'}"></span>FACT SHEET</span>
+      <span style="font-size:9px;font-family:'DM Sans',sans-serif;color:${p.contractSigned?'#7C9B88':'#444'}"><span class="stat-dot" style="background:${p.contractSigned?'#7C9B88':'#333'}"></span>CONTRACT</span>
+    </div>
+    <div class="divider"></div>
+    <span class="detail-lbl">BLISSFUL SCORES</span>
+    ${Object.entries(p.scores||{}).map(([k,v])=>`<div class="score-row"><span class="score-key">${scoreLabels[k]||k}</span><div style="display:flex;align-items:center;gap:6px"><div class="score-bar-wrap" style="width:50px"><div class="score-bar-fill" style="width:${v*10}%;background:${scoreColor(v)}"></div></div><span style="font-size:11px;color:${scoreColor(v)};font-family:'DM Sans',sans-serif;min-width:14px;text-align:right">${v}</span></div></div>`).join('')}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #1C1C14">
+      <span style="font-size:12px;color:#D4AF6A;font-family:'DM Sans',sans-serif">BLISSFUL SCORE</span>
+      <span style="font-size:20px;color:#D4AF6A;font-family:'DM Sans',sans-serif">${score}</span>
+    </div>
+    ${p.notes?`<div class="divider"></div><span class="detail-lbl">ADVISOR NOTES</span><div style="font-size:12px;color:#777;font-family:'DM Sans',sans-serif;line-height:1.6;font-style:italic">${x(p.notes)}</div>`:''}
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn-gold" style="flex:1" onclick="copySummary('${p.id}')">COPY</button>
+      <button class="btn-red" onclick="deleteProp('${p.id}')">DELETE</button>
+    </div>`;
+}
+
+function copySummary(id){
+  const p=properties.find(pr=>pr.id===id);if(!p)return;
+  const t=`${p.name}\n${p.area}, ${p.country} · ${p.category}\nRate: $${p.avgRate}/night · ${p.mealPlan}\nFly-in: ${p.flyIn?'Yes, '+p.airstrip:'No'}\nCommission: ${p.commission}\nContact: ${p.resEmail}\nScore: ${blissfulScore(p.scores)}/10`;
+  navigator.clipboard?.writeText(t);
+}
+function deleteProp(id){
+  if(!confirm('Delete this property?'))return;
+  properties=properties.filter(p=>p.id!==id);persist();selectedPropId=null;
+  document.getElementById('detail-panel').style.display='none';filterProps();renderDashboard();
+}
+
+// AI Add Property
+function openAddProp(){document.getElementById('modal-addprop').classList.add('open');}
+async function submitAddProp(){
+  const text=document.getElementById('add-prop-text').value.trim();
+  if(!text)return;
+  const btn=document.getElementById('add-prop-btn');
+  const errEl=document.getElementById('add-prop-error');
+  btn.textContent='ADDING…';btn.disabled=true;errEl.style.display='none';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:`You are a database assistant for Blissful Travel Adventures luxury safari company. Extract property data and return ONLY valid JSON (no markdown, no backticks):
+
+Input: "${text}"
+
+Return this exact structure:
+{"id":"${uid()}","name":"","brand":"","country":"Tanzania","destination":"Tanzania Safari","area":"","type":"Safari Lodge","category":"Luxury","rooms":0,"roomTypes":"","flyIn":false,"airstrip":"","familyFriendly":false,"childPolicy":"","clientType":[],"avgRate":0,"mealPlan":"All Inclusive","resContact":"","resEmail":"","resWhatsapp":"","salesEmail":"","website":"","commission":"","agentRates":false,"factSheet":false,"contractSigned":false,"lastUpdated":"${new Date().toISOString().split('T')[0]}","notes":"","scores":{"location":8,"accommodation":8,"food":8,"service":8,"activities":8,"value":8,"luxuryExp":8,"familyExp":5,"honeymoonExp":7}}
+
+category must be one of: Mid-Range, Semi-Luxury, Luxury, Ultra-Luxury
+clientType array from: Honeymoon,Couples,Families,Groups,Corporate,VIP,Executives,Athletes,Musicians,Creators,Photographers,Luxury Travelers`}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content.find(c=>c.type==='text')?.text||'';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    properties.push(parsed);persist();
+    closeModal('modal-addprop');filterProps();renderDashboard();
+    document.getElementById('add-prop-text').value='';
+  }catch(e){errEl.textContent='Could not parse. Try adding more detail about the lodge.';errEl.style.display='block';}
+  btn.textContent='ADD WITH AI';btn.disabled=false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ITINERARY BUILDER
+// ═══════════════════════════════════════════════════════════════════
+function renderItin(){
+  const s=itinState;
+  document.getElementById('itin-filters').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:140px">
+      <label style="font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif">DESTINATION</label>
+      <select onchange="itinState.destination=this.value;renderItin()" style="font-size:12px">
+        <option value="All" ${s.destination==='All'?'selected':''}>All Destinations</option>
+        ${DESTINATIONS_LIST.map(d=>`<option ${s.destination===d?'selected':''}>${d}</option>`).join('')}
+      </select></div>
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:130px">
+      <label style="font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif">LUXURY LEVEL</label>
+      <select onchange="itinState.category=this.value;renderItin()" style="font-size:12px">
+        <option value="All" ${s.category==='All'?'selected':''}>All Categories</option>
+        ${CATEGORIES.map(c=>`<option ${s.category===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:140px">
+      <label style="font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif">CLIENT TYPE</label>
+      <select onchange="itinState.client=this.value;renderItin()" style="font-size:12px">
+        <option value="All" ${s.client==='All'?'selected':''}>All Clients</option>
+        ${CLIENT_TYPES.map(c=>`<option ${s.client===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:90px">
+      <label style="font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif">FLY-IN</label>
+      <select onchange="itinState.flyIn=this.value;renderItin()" style="font-size:12px">
+        <option value="All">Any</option><option ${s.flyIn==='Yes'?'selected':''}>Yes</option><option ${s.flyIn==='No'?'selected':''}>No</option>
+      </select></div>
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:80px">
+      <label style="font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif">MIN $</label>
+      <input type="number" value="${s.minRate}" placeholder="0" onchange="itinState.minRate=this.value;renderItin()">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:80px">
+      <label style="font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif">MAX $</label>
+      <input type="number" value="${s.maxRate}" placeholder="∞" onchange="itinState.maxRate=this.value;renderItin()">
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer" onclick="itinState.honeymoon=!itinState.honeymoon;renderItin()">
+        <div class="toggle" style="background:${s.honeymoon?'#D4AF6A':'#222'}"><div class="toggle-knob" style="left:${s.honeymoon?'14px':'2px'}"></div></div>
+        <span style="font-size:9px;letter-spacing:1.5px;font-family:'DM Sans',sans-serif;color:${s.honeymoon?'#D4AF6A':'#555'}">HONEYMOON</span></label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer" onclick="itinState.family=!itinState.family;renderItin()">
+        <div class="toggle" style="background:${s.family?'#D4AF6A':'#222'}"><div class="toggle-knob" style="left:${s.family?'14px':'2px'}"></div></div>
+        <span style="font-size:9px;letter-spacing:1.5px;font-family:'DM Sans',sans-serif;color:${s.family?'#D4AF6A':'#555'}">FAMILY</span></label>
+    </div>`;
+
+  const res=properties.filter(p=>{
+    return(s.destination==='All'||p.area.includes(s.destination)||p.destination===s.destination)&&
+      (s.category==='All'||p.category===s.category)&&
+      (s.client==='All'||(p.clientType||[]).includes(s.client))&&
+      (s.flyIn==='All'||(s.flyIn==='Yes'?p.flyIn:!p.flyIn))&&
+      (!s.honeymoon||(p.clientType||[]).includes('Honeymoon'))&&
+      (!s.family||p.familyFriendly)&&
+      (!s.minRate||p.avgRate>=Number(s.minRate))&&
+      (!s.maxRate||p.avgRate<=Number(s.maxRate));
+  });
+  document.getElementById('itin-count').textContent=res.length+' MATCHES';
+  document.getElementById('itin-results').innerHTML=res.length?res.map(p=>`
+    <div class="card" onclick="switchToProps('${p.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <span class="cat-badge ${catClass(p.category)}">${p.category}</span>
+        <span style="font-size:13px;color:#D4AF6A;font-family:'DM Sans',sans-serif">$${(p.avgRate||0).toLocaleString()}<span style="font-size:9px;color:#555">/night</span></span>
+      </div>
+      <div style="font-size:15px;margin-bottom:2px">${x(p.name)}</div>
+      <div style="font-size:11px;color:#666;font-family:'DM Sans',sans-serif;margin-bottom:10px">${x(p.area)} · ${x(p.country)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:8px">
+          ${p.familyFriendly?'<span style="font-size:9px;color:#7C9B88;font-family:\'DM Sans\',sans-serif">FAMILY ✓</span>':''}
+          ${p.flyIn?'<span style="font-size:9px;color:#5ab4f0;font-family:\'DM Sans\',sans-serif">✈ FLY-IN</span>':''}
+        </div>
+        <span style="font-size:12px;color:#D4AF6A;font-family:'DM Sans',sans-serif">⭑ ${blissfulScore(p.scores)}</span>
+      </div>
+    </div>`).join(''):'<div style="grid-column:1/-1;text-align:center;padding:60px;color:#555;font-style:italic">No properties match these filters.</div>';
+}
+
+function switchToProps(id){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[onclick="switchTab(\'properties\')"]').classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-properties').classList.add('active');
+  buildPropFilters();filterProps();selectProp(id);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONTACTS
+// ═══════════════════════════════════════════════════════════════════
+function renderContacts(){
+  document.getElementById('contacts-grid').innerHTML=contacts.map(c=>`
+    <div class="contact-card">
+      <div style="font-size:15px;margin-bottom:2px">${x(c.person)}</div>
+      <div style="font-size:11px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:1px">${x(c.position)}</div>
+      <div style="font-size:11px;color:#888;font-family:'DM Sans',sans-serif;margin-bottom:10px">${x(c.company)}</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${c.email?`<div style="font-size:11px;color:#777;font-family:'DM Sans',sans-serif">✉ ${x(c.email)}</div>`:''}
+        ${c.whatsapp?`<div style="font-size:11px;color:#7C9B88;font-family:'DM Sans',sans-serif">📱 ${x(c.whatsapp)}</div>`:''}
+        ${c.destination?`<div style="font-size:10px;color:#555;font-family:'DM Sans',sans-serif">${x(c.destination)}</div>`:''}
+        ${c.property?`<div style="font-size:10px;color:#555;font-family:'DM Sans',sans-serif">🏨 ${x(c.property)}</div>`:''}
+        ${c.notes?`<div style="font-size:11px;color:#666;font-family:'DM Sans',sans-serif;font-style:italic;margin-top:6px;border-top:1px solid #1C1C14;padding-top:8px">${x(c.notes)}</div>`:''}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        ${c.lastMet?`<span style="font-size:9px;color:#555;font-family:'DM Sans',sans-serif">MET ${c.lastMet}</span>`:''}
+        ${c.lastFollowUp?`<span style="font-size:9px;color:#555;font-family:'DM Sans',sans-serif">FOLLOW-UP ${c.lastFollowUp}</span>`:''}
+      </div>
+      <button class="btn-red" style="margin-top:10px;font-size:9px;padding:4px 10px" onclick="deleteContact('${c.id}')">DELETE</button>
+    </div>`).join('');
+}
+
+function openAddContact(){document.getElementById('modal-addcontact').classList.add('open');}
+function submitAddContact(){
+  const c={id:'c'+Date.now(),company:v('nc-company'),person:v('nc-person'),position:v('nc-position'),email:v('nc-email'),whatsapp:v('nc-whatsapp'),destination:v('nc-destination'),property:v('nc-property'),notes:v('nc-notes'),lastMet:'',lastFollowUp:''};
+  contacts.push(c);persist();closeModal('modal-addcontact');renderContacts();
+  ['nc-company','nc-person','nc-position','nc-email','nc-whatsapp','nc-destination','nc-property','nc-notes'].forEach(i=>document.getElementById(i).value='');
+}
+function deleteContact(id){if(!confirm('Delete this contact?'))return;contacts=contacts.filter(c=>c.id!==id);persist();renderContacts();}
+
+// ═══════════════════════════════════════════════════════════════════
+// KILIFAIR LEADS
+// ═══════════════════════════════════════════════════════════════════
+function renderLeads(){
+  document.getElementById('lead-stats').innerHTML=[
+    ['TOTAL LEADS',leads.length,'#D4AF6A'],
+    ['HIGH PRIORITY',leads.filter(l=>l.priority==='High').length,'#ff8c42'],
+    ['FOLLOW UP',leads.filter(l=>l.followUpRequired).length,'#e6c84a'],
+    ['FACT SHEETS',leads.filter(l=>l.factSheetCollected).length,'#7C9B88'],
+  ].map(([l,v,c])=>`<div style="background:#0D0D09;border:1px solid #1C1C14;border-radius:6px;padding:12px 18px"><div style="font-size:22px;color:${c};font-family:'DM Sans',sans-serif">${v}</div><div style="font-size:9px;letter-spacing:2px;color:#555;font-family:'DM Sans',sans-serif">${l}</div></div>`).join('');
+
+  const PSTYLE={High:{bg:'#2a1000',border:'#8b3a00',text:'#ff8c42'},Medium:{bg:'#1a2000',border:'#4a5800',text:'#b8cc44'},Low:{bg:'#1a1a1a',border:'#3a3a3a',text:'#888'}};
+  document.getElementById('leads-list').innerHTML=leads.length?leads.map(l=>{
+    const ps=PSTYLE[l.priority]||PSTYLE.Medium;
+    return `<div class="lead-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        <div><div style="font-size:16px;margin-bottom:2px">${x(l.property)}</div>
+        <div style="font-size:11px;color:#888;font-family:'DM Sans',sans-serif">${x(l.company)} · ${x(l.destination)}${l.area?' · '+x(l.area):''}</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:10px;font-family:'DM Sans',sans-serif;padding:2px 10px;border-radius:12px;background:${ps.bg};border:1px solid ${ps.border};color:${ps.text}">${l.priority?.toUpperCase()} PRIORITY</span>
+          <span class="cat-badge ${catClass(l.category)}">${x(l.category)}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+        ${l.approxRate?`<div class="info-item"><div class="info-k">APPROX RATE</div><div class="info-v">$${l.approxRate}/night</div></div>`:''}
+        ${l.bestFor?`<div class="info-item"><div class="info-k">BEST FOR</div><div class="info-v">${x(l.bestFor)}</div></div>`:''}
+        ${l.usp?`<div class="info-item"><div class="info-k">USP</div><div class="info-v">${x(l.usp)}</div></div>`:''}
+        ${l.resContact?`<div class="info-item"><div class="info-k">CONTACT</div><div class="info-v">${x(l.resContact)}</div></div>`:''}
+        ${l.whatsapp?`<div class="info-item"><div class="info-k">WHATSAPP</div><div class="info-v">${x(l.whatsapp)}</div></div>`:''}
+        ${l.email?`<div class="info-item"><div class="info-k">EMAIL</div><div class="info-v">${x(l.email)}</div></div>`:''}
+      </div>
+      <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+        <span style="font-size:9px;font-family:'DM Sans',sans-serif;color:${l.agentRates?'#7C9B88':'#444'}"><span class="stat-dot" style="background:${l.agentRates?'#7C9B88':'#333'}"></span>AGENT RATES</span>
+        <span style="font-size:9px;font-family:'DM Sans',sans-serif;color:${l.factSheetCollected?'#7C9B88':'#444'}"><span class="stat-dot" style="background:${l.factSheetCollected?'#7C9B88':'#333'}"></span>FACT SHEET</span>
+        <span style="font-size:9px;font-family:'DM Sans',sans-serif;color:${l.followUpRequired?'#ff8c42':'#444'}"><span class="stat-dot" style="background:${l.followUpRequired?'#ff8c42':'#333'}"></span>FOLLOW UP</span>
+      </div>
+      ${l.notes?`<div style="font-size:11px;color:#666;font-family:'DM Sans',sans-serif;font-style:italic;margin-top:10px;border-top:1px solid #1C1C14;padding-top:10px">${x(l.notes)}</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-gold" style="padding:6px 14px;font-size:10px" onclick="openEditLead('${l.id}')">EDIT</button>
+        <button class="btn-red" style="padding:6px 14px;font-size:10px" onclick="deleteLead('${l.id}')">DELETE</button>
+      </div>
+    </div>`;}).join(''):'<div style="text-align:center;padding:60px;color:#555;font-style:italic">No leads yet. Use the button above to capture your first KiliFair lead.</div>';
+}
+
+function openAddLead(){document.getElementById('modal-addlead').classList.add('open');}
+function submitAddLead(){
+  const l={id:'l'+Date.now(),company:v('nl-company'),property:v('nl-property'),destination:v('nl-destination'),area:v('nl-area'),category:v('nl-category'),approxRate:Number(v('nl-rate'))||0,bestFor:v('nl-bestfor'),usp:v('nl-usp'),resContact:v('nl-contact'),whatsapp:v('nl-whatsapp'),email:v('nl-email'),priority:v('nl-priority'),notes:v('nl-notes'),agentRates:document.getElementById('nl-agentrates').checked,factSheetCollected:document.getElementById('nl-factsheet').checked,followUpRequired:document.getElementById('nl-followup').checked};
+  leads.push(l);persist();closeModal('modal-addlead');renderLeads();renderDashboard();
+}
+function deleteLead(id){if(!confirm('Delete this lead?'))return;leads=leads.filter(l=>l.id!==id);persist();renderLeads();renderDashboard();}
+
+let editLeadId=null;
+function openEditLead(id){
+  const l=leads.find(l=>l.id===id);if(!l)return;
+  editLeadId=id;
+  document.getElementById('el-company').value=l.company||'';
+  document.getElementById('el-property').value=l.property||'';
+  document.getElementById('el-destination').value=l.destination||'';
+  document.getElementById('el-area').value=l.area||'';
+  document.getElementById('el-category').value=l.category||'Semi-Luxury';
+  document.getElementById('el-rate').value=l.approxRate||'';
+  document.getElementById('el-contact').value=l.resContact||'';
+  document.getElementById('el-whatsapp').value=l.whatsapp||'';
+  document.getElementById('el-email').value=l.email||'';
+  document.getElementById('el-priority').value=l.priority||'Medium';
+  document.getElementById('el-bestfor').value=l.bestFor||'';
+  document.getElementById('el-usp').value=l.usp||'';
+  document.getElementById('el-notes').value=l.notes||'';
+  document.getElementById('el-agentrates').checked=!!l.agentRates;
+  document.getElementById('el-factsheet').checked=!!l.factSheetCollected;
+  document.getElementById('el-followup').checked=!!l.followUpRequired;
+  document.getElementById('modal-editlead').classList.add('open');
+}
+function submitEditLead(){
+  leads=leads.map(l=>l.id===editLeadId?{...l,
+    company:v('el-company'),property:v('el-property'),destination:v('el-destination'),
+    area:v('el-area'),category:v('el-category'),approxRate:Number(v('el-rate'))||0,
+    resContact:v('el-contact'),whatsapp:v('el-whatsapp'),email:v('el-email'),
+    priority:v('el-priority'),bestFor:v('el-bestfor'),usp:v('el-usp'),notes:v('el-notes'),
+    agentRates:document.getElementById('el-agentrates').checked,
+    factSheetCollected:document.getElementById('el-factsheet').checked,
+    followUpRequired:document.getElementById('el-followup').checked,
+  }:l);
+  persist();closeModal('modal-editlead');renderLeads();renderDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SCORING
+// ═══════════════════════════════════════════════════════════════════
+function renderScoring(){
+  const sorted=[...properties].sort((a,b)=>blissfulScore(b.scores)-blissfulScore(a.scores));
+  document.getElementById('score-tbody').innerHTML=sorted.map(p=>{
+    const s=p.scores||{};
+    const score=blissfulScore(p.scores);
+    const vals=[s.location,s.accommodation,s.food,s.service,s.activities,s.value,s.luxuryExp,s.familyExp,s.honeymoonExp];
+    return `<tr class="tbl-row" onclick="switchToProps('${p.id}')">
+      <td><div style="font-size:12px;color:#E2D9C8">${x(p.name)}</div><div style="font-size:9px;color:#555;font-family:'DM Sans',sans-serif">${x(p.area)}</div></td>
+      ${vals.map(v=>`<td><div style="display:flex;align-items:center;gap:5px"><div style="width:28px;height:2px;background:#1a1a12;border-radius:1px"><div style="width:${(v||0)*10}%;height:100%;background:${scoreColor(v||0)}"></div></div><span style="font-size:11px;color:${scoreColor(v||0)};font-family:'DM Sans',sans-serif">${v||'-'}</span></div></td>`).join('')}
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:50px;height:3px;background:#1a1a12;border-radius:2px"><div style="width:${score*10}%;height:100%;background:#D4AF6A;border-radius:2px"></div></div><span style="font-size:13px;color:#D4AF6A;font-family:'DM Sans',sans-serif;font-weight:600">${score}</span></div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL & UTILS
+// ═══════════════════════════════════════════════════════════════════
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+function v(id){const e=document.getElementById(id);return e?e.value:'';}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+loadData();
+renderDashboard();
+buildPropFilters();
+filterProps();
+</script>
+</body>
+</html>
