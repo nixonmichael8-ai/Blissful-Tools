@@ -213,7 +213,10 @@ textarea{resize:vertical}
         <div style="font-size:9px;letter-spacing:3px;color:#D4AF6A;font-family:'DM Sans',sans-serif;margin-bottom:4px">LIVE CAPTURE</div>
         <h2 style="font-size:22px;font-weight:400">KiliFair Leads</h2>
       </div>
-      <button class="btn-gold" onclick="openAddLead()">+ CAPTURE LEAD</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-ghost" onclick="openImport()" style="border-color:#7C9B8855;color:#7C9B88;font-size:10px">⬆ IMPORT FROM CHECKLIST</button>
+        <button class="btn-gold" onclick="openAddLead()">+ CAPTURE LEAD</button>
+      </div>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap" id="lead-stats"></div>
     <div id="leads-list"></div>
@@ -357,6 +360,25 @@ textarea{resize:vertical}
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn-gold" onclick="submitEditLead()" style="flex:1">SAVE CHANGES</button>
       <button class="btn-ghost" onclick="closeModal('modal-editlead')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import from Checklist Modal -->
+<div class="modal-bg" id="modal-import">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3>Import from Checklist</h3>
+      <button onclick="closeModal('modal-import')" style="background:none;color:#555;font-size:16px;padding:0">✕</button>
+    </div>
+    <p style="font-size:12px;color:#666;font-family:'DM Sans',sans-serif;margin-bottom:6px;line-height:1.6">Open your KiliFair checklist → tap <strong style="color:#D4AF6A">EXPORT → COPY ALL TO CLIPBOARD</strong> → paste below.</p>
+    <p style="font-size:11px;color:#555;font-family:'DM Sans',sans-serif;margin-bottom:14px;line-height:1.6">Claude will read all companies and properties and create leads automatically.</p>
+    <textarea id="import-text" rows="8" placeholder="Paste your checklist export here..."></textarea>
+    <div id="import-progress" style="display:none;margin-top:10px;padding:10px 12px;background:#0D100D;border:1px solid #1C2A1C;border-radius:6px;font-size:11px;color:#7C9B88;font-family:'DM Sans',sans-serif"></div>
+    <div id="import-error" style="display:none;margin-top:8px;font-size:11px;color:#cc7777;font-family:'DM Sans',sans-serif"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-gold" id="import-btn" onclick="runImport()" style="flex:1">IMPORT ALL WITH AI</button>
+      <button class="btn-ghost" onclick="closeModal('modal-import')">CANCEL</button>
     </div>
   </div>
 </div>
@@ -858,6 +880,99 @@ function submitEditLead(){
     followUpRequired:document.getElementById('el-followup').checked,
   }:l);
   persist();closeModal('modal-editlead');renderLeads();renderDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// IMPORT FROM CHECKLIST
+// ═══════════════════════════════════════════════════════════════════
+function openImport(){
+  document.getElementById('import-text').value='';
+  document.getElementById('import-progress').style.display='none';
+  document.getElementById('import-error').style.display='none';
+  document.getElementById('import-btn').textContent='IMPORT ALL WITH AI';
+  document.getElementById('import-btn').disabled=false;
+  document.getElementById('modal-import').classList.add('open');
+}
+
+async function runImport(){
+  const text=document.getElementById('import-text').value.trim();
+  if(!text){document.getElementById('import-error').textContent='Please paste your checklist export first.';document.getElementById('import-error').style.display='block';return;}
+
+  const btn=document.getElementById('import-btn');
+  const prog=document.getElementById('import-progress');
+  const err=document.getElementById('import-error');
+  btn.textContent='IMPORTING…';btn.disabled=true;
+  err.style.display='none';
+  prog.style.display='block';prog.textContent='Reading your checklist data…';
+
+  // Split into companies by detecting "COMPANY N:" pattern
+  const companyBlocks = text.split(/\nCOMPANY \d+:/).filter(b=>b.trim());
+  if(!companyBlocks.length){
+    err.textContent='Could not read checklist format. Make sure you copied the full export.';
+    err.style.display='block';btn.textContent='IMPORT ALL WITH AI';btn.disabled=false;prog.style.display='none';
+    return;
+  }
+
+  let imported=0, skipped=0;
+  const newLeads=[];
+
+  for(let i=0;i<companyBlocks.length;i++){
+    const block=companyBlocks[i];
+    prog.textContent=`Processing company ${i+1} of ${companyBlocks.length}…`;
+
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',max_tokens:2000,
+          messages:[{role:'user',content:`You are a data assistant for Blissful Travel Adventures. Parse this KiliFair checklist block and return ONLY a valid JSON array of lead objects. No markdown, no explanation, just the JSON array.
+
+Each lead object must have these exact fields:
+{"id":"l${Date.now()}_IDX","company":"","property":"","destination":"","area":"","category":"Semi-Luxury","approxRate":0,"bestFor":"","usp":"","resContact":"","whatsapp":"","email":"","priority":"Medium","notes":"","agentRates":false,"factSheetCollected":false,"followUpRequired":false}
+
+Rules:
+- Create ONE lead object per property in the block
+- Use the company contact details (email, whatsapp) for all properties in that company
+- category must be one of: Mid-Range, Semi-Luxury, Luxury, Ultra-Luxury (default Semi-Luxury if unknown)
+- approxRate: use the double rate number if available, otherwise 0
+- priority: default "Medium"
+- Replace IDX with the property index number (1,2,3...)
+- If destination is "—" or empty, use empty string
+
+Checklist block:
+${block.substring(0,3000)}`}]
+        })
+      });
+      const data=await res.json();
+      const raw=data.content.find(c=>c.type==='text')?.text||'[]';
+      const clean=raw.replace(/```json|```/g,'').trim();
+      const parsed=JSON.parse(clean);
+      if(Array.isArray(parsed)){
+        parsed.forEach((l,idx)=>{
+          l.id='l'+Date.now()+'_'+i+'_'+idx;
+          newLeads.push(l);
+          imported++;
+        });
+      }
+    }catch(e){skipped++;}
+
+    // Small delay to avoid rate limiting
+    await new Promise(r=>setTimeout(r,300));
+  }
+
+  if(newLeads.length>0){
+    leads=[...leads,...newLeads];
+    persist();
+    prog.textContent=`✓ Imported ${imported} leads from ${companyBlocks.length} companies.${skipped>0?' ('+skipped+' skipped)':''}`;
+    prog.style.color='#7C9B88';
+    renderLeads();renderDashboard();
+    setTimeout(()=>{ closeModal('modal-import'); },2000);
+  } else {
+    err.textContent='No leads could be imported. Please check your export text and try again.';
+    err.style.display='block';
+    prog.style.display='none';
+  }
+  btn.textContent='IMPORT ALL WITH AI';btn.disabled=false;
 }
 
 // ═══════════════════════════════════════════════════════════════════
